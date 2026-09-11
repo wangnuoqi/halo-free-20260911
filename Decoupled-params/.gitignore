@@ -1,0 +1,52 @@
+# Python cache and local tooling
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Editors and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+log/
+logs/
+log_dir/
+
+# Structured outputs you do not want in git
+*.json
+
+# Images and rendered visual outputs
+*.png
+*.PNG
+*.jpg
+*.JPG
+*.jpeg
+*.JPEG
+*.bmp
+*.BMP
+*.tif
+*.TIF
+*.tiff
+*.TIFF
+*.gif
+*.GIF
+*.webp
+*.WEBP
+*.pdf
+*.PDF
+
+# Archives
+*.zip
+*.7z
+*.tar
+*.gz
+
+# Keep model checkpoints; do not ignore *.pth

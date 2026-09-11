@@ -1,0 +1,8 @@
+# 忽略所有png/tif/tiff图片（大小写都包含）
+*.png
+*.PNG
+*.tif
+*.TIF
+*.tiff
+*.TIFF
+model_testoutput/refine_log_v9/refine_log_v9.zip
