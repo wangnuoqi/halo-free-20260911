@@ -55,3 +55,11 @@ data_bsds/
 **/runs/
 **/*.tfevents.*
 **/events.out.tfevents.*
+
+# Independent baseline repositories kept locally
+/Decoupled_Learning/20261005_clipart_removal/baselines/ARCNN-pytorch/
+/Decoupled_Learning/20261005_clipart_removal/baselines/FBCNN/
+/Decoupled_Learning/20261005_clipart_removal/baselines/MambaIR/
+/Decoupled_Learning/20261005_clipart_removal/baselines/VIVNet/
+/Decoupled_Learning/20261008_textureremove/baseline/CSGIS-Net/
+/Decoupled_Learning/20261008_textureremove/baseline/NAFNet/

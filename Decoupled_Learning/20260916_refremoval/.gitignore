@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Training / inference artifacts
+outputs/
+output/
+logs/
+runs/
+checkpoints/
+checkpoint-*/
+*.ckpt
+*.pth
+*.pt
+*.bin
+*.safetensors
+*.onnx
+
+# Data / generated files
+*.npy
+*.npz
+*.h5
+*.lmdb
+*.jpg
+*.jpeg
+*.webp
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Hugging Face / model cache
+HF_CACHE/
+.cache/
+

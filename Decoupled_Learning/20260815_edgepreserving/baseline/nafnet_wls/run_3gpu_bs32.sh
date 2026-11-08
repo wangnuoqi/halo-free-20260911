@@ -1,0 +1,1 @@
+../run_nafnet_wls_nccl_3gpu_bs32.sh

@@ -1,14 +1,13 @@
 clear; clc;
 
-% Visualize test_fei outputs produced by run_inference_compare.py.
-% Each WLS directory contains baseline_original, exp7c_recipe and gt.
+% Visualize saved test_fei predictions from NAFNet, VIVNet and exp7C.
 
 thisDir = fileparts(mfilename('fullpath'));
 addpath(thisDir);
 
-modelRoot = 'D:\nuoqi\halo-free\Decoupled_Learning\20260901_vis\edge\outputs\test_fei';
-inputDir = 'D:\nuoqi\S2R-HDR\data\test_fei\HDRimage';
-outputRoot = 'D:\nuoqi\halo-free\Decoupled_Learning\20260901_vis\edge\visualization\test_fei';
+modelRoot = 'D:\ResearchCode\halo-free\Decoupled_Learning\20261030_edgepreserving\exp_a\evaluation\test_fei_modelvis';
+inputDir = 'D:\ResearchCode\S2R-HDR\data\test_fei\HDRimage';
+outputRoot = 'D:\ResearchCode\halo-free\Decoupled_Learning\20261030_edgepreserving\exp_a\evaluation\test_fei_modelvis\visualization';
 % Direct tone-mapping compression factor for linear test_fei HDR.
 % Set this explicitly because test_fei has no device-limited 9937 code range.
 compression_factor_override = 0.45;
@@ -28,9 +27,10 @@ for d = 1:numel(wlsDirs)
     paramTag = wlsDirs(d).name;
     [lambdaVal, alphaVal] = parse_wls_dir(paramTag);
     paramRoot = fullfile(modelRoot, paramTag);
-    baselineDir = fullfile(paramRoot, 'baseline_original');
-    improvedDir = fullfile(paramRoot, 'exp7c_recipe');
-    gtDir = fullfile(paramRoot, 'gt');
+    modelDirs = {fullfile(paramRoot, 'nafnet'), ...
+                 fullfile(paramRoot, 'vivnet'), ...
+                 fullfile(paramRoot, 'exp7c_recipe')};
+    methodNames = {'NAFNet', 'VIVNet', 'Exp7C'};
     outDir = fullfile(outputRoot, paramTag);
     ensure_dir(outDir);
     fprintf('\n=== %s (lambda=%.4f, alpha=%.4f) ===\n', paramTag, lambdaVal, alphaVal);
@@ -52,24 +52,26 @@ for d = 1:numel(wlsDirs)
         wlsBase = yMin + wls(logNorm, lambdaVal, alphaVal) * rangeVal;
         minB = prctile(wlsBase(:), 1);
 
-        baseline = read_gray(fullfile(baselineDir, [sampleName '.tiff']));
-        improved = read_gray(fullfile(improvedDir, [sampleName '.tiff']));
-        baseline = yMin + resize_to(baseline, size(logIntensity)) * rangeVal;
-        improved = yMin + resize_to(improved, size(logIntensity)) * rangeVal;
-
-        rgbBase = reconstruct_rgb(hdr, intensity, baseline, comp, minB, display_scale);
-        rgbImproved = reconstruct_rgb(hdr, intensity, improved, comp, minB, display_scale);
+        rgbPredictions = cell(1, numel(modelDirs));
+        for m = 1:numel(modelDirs)
+            baseLog = read_gray(fullfile(modelDirs{m}, [sampleName '.tiff']));
+            baseLog = yMin + resize_to(baseLog, size(logIntensity)) * rangeVal;
+            rgbPredictions{m} = reconstruct_rgb(hdr, intensity, baseLog, comp, minB, display_scale);
+        end
         rgbGt = reconstruct_rgb(hdr, intensity, wlsBase, comp, minB, display_scale);
 
-        % Save the individual color images alongside the three-panel figure.
-        imwrite(uint8(rgbBase * 255), fullfile(outDir, [sampleName '_baseline.jpg']));
-        imwrite(uint8(rgbImproved * 255), fullfile(outDir, [sampleName '_exp7c.jpg']));
+        % Save each model rendering and the operator result.
+        for m = 1:numel(modelDirs)
+            imwrite(uint8(rgbPredictions{m} * 255), ...
+                fullfile(outDir, [sampleName '_' lower(methodNames{m}) '.jpg']));
+        end
         imwrite(uint8(rgbGt * 255), fullfile(outDir, [sampleName '_gt.jpg']));
 
-        fig = figure('Visible', 'off', 'Color', 'w', 'Position', [50 50 1900 680]);
-        tiled = tiledlayout(fig, 1, 3, 'TileSpacing', 'none', 'Padding', 'compact');
-        ax = nexttile(tiled); imshow(rgbBase, 'Parent', ax); title(ax, 'Baseline refine');
-        ax = nexttile(tiled); imshow(rgbImproved, 'Parent', ax); title(ax, 'Exp7C refine');
+        fig = figure('Visible', 'off', 'Color', 'w', 'Position', [50 50 2500 680]);
+        tiled = tiledlayout(fig, 1, numel(modelDirs) + 1, 'TileSpacing', 'none', 'Padding', 'compact');
+        for m = 1:numel(modelDirs)
+            ax = nexttile(tiled); imshow(rgbPredictions{m}, 'Parent', ax); title(ax, methodNames{m});
+        end
         ax = nexttile(tiled); imshow(rgbGt, 'Parent', ax); title(ax, sprintf('WLS GT (%.2f, %.2f)', lambdaVal, alphaVal));
         exportgraphics(fig, fullfile(outDir, [sampleName '_compare.jpg']), 'Resolution', 150);
         close(fig);

@@ -1,0 +1,81 @@
+# Controlled ablation plan for the edge-preserving WLS task.
+# This file is a design specification; no run is claimed complete here.
+task:
+  data_root: /mnt/d/ResearchCode/S2R-HDR/data/20260818
+  input: grayscale/*-log.tif
+  target: grayscale/*-WLS-l0p500-a1p400.tif
+  validation_holdout: 200
+  validation_seed: 42
+  test_split: test-200
+  train_crop: 256
+  test_geometry: full_image_even_trim
+  metrics:
+    - mean_psnr_db
+    - mean_mse
+    - mean_mae
+    - edge_mae_gt_gradient_top10pct
+    - edge_mse_gt_gradient_top10pct
+    - halo_score
+    - parameter_count
+    - inference_ms_per_image
+
+models:
+  A0_current_3stage:
+    backbone: current
+    guided_filter: true
+    refine_3stage: true
+  A1_nafnet_only:
+    backbone: nafnet_local_width32
+    guided_filter: false
+    refine_3stage: false
+  A2_vivnet_only:
+    backbone: vivnet_t_single_channel
+    guided_filter: false
+    refine_3stage: false
+  A3_nafnet_guided_3stage:
+    backbone: nafnet_local_width32
+    guided_filter: true
+    refine_3stage: true
+  A4_vivnet_guided_3stage:
+    backbone: vivnet_t_single_channel
+    guided_filter: true
+    refine_3stage: true
+
+module_ablation_on_best_backbone:
+  B0_backbone_only:
+    guided_filter: false
+    refine_3stage: false
+  B1_guided_only:
+    guided_filter: true
+    refine_3stage: false
+  B2_refine_only:
+    guided_filter: false
+    refine_3stage: true
+  B3_guided_plus_refine:
+    guided_filter: true
+    refine_3stage: true
+
+refine_variants:
+  R1_residual_conditioned:
+    condition: input_minus_guided_output
+    initialization: standard
+  R2_edge_conditioned_gate:
+    condition: sobel_laplacian_projection
+    initialization: standard
+  R3_zero_initialized_refine:
+    condition: guided_residual
+    initialization: zero_last_projection
+
+fairness:
+  keep_fixed:
+    - data_root
+    - split_ids
+    - train_crop
+    - validation_seed
+    - optimizer
+    - learning_rate_schedule
+    - total_optimizer_updates
+    - precision
+    - evaluation_geometry
+  selection_rule: choose_best_validation_mse_then_report_test_once
+  no_test_set_tuning: true

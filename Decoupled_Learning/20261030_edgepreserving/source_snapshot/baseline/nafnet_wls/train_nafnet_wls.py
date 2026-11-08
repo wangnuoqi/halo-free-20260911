@@ -1,0 +1,1 @@
+../train_nafnet_wls.py
